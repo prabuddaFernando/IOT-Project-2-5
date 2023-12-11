@@ -1,7 +1,10 @@
 package com.dsv.iot25
 
 import android.os.Bundle
+import android.os.StrictMode
+import android.os.StrictMode.ThreadPolicy
 import android.util.Log
+import android.widget.SeekBar
 import androidx.appcompat.app.AppCompatActivity
 import antonkozyriatskyi.circularprogressindicator.CircularProgressIndicator
 import antonkozyriatskyi.circularprogressindicator.CircularProgressIndicator.ProgressTextAdapter
@@ -41,6 +44,20 @@ class MainActivity : AppCompatActivity() {
             }
         circularProgress?.setProgressTextAdapter(textAdapter)
 
+        val seekBar = findViewById<SeekBar>(R.id.humiditifiSeekBar)
+        seekBar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
+            override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
+
+            }
+
+            override fun onStartTrackingTouch(seekBar: SeekBar?) {
+
+            }
+
+            override fun onStopTrackingTouch(seekBar: SeekBar?) {
+
+            }
+        })
         connectToServer()
     }
 
@@ -138,6 +155,49 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+
+    fun updateThreadPolicy() {
+        val policy = ThreadPolicy.Builder()
+            .permitAll().build()
+        StrictMode.setThreadPolicy(policy)
+    }
+
+//    fun run(command: String?): String? {
+//        updateThreadPolicy()
+//        var responseData: String? = null
+//        val hostname = "130.237.177.216"
+//        val username = "pi"
+//        val password = "IoT@2021"
+//        try {
+//            val conn = Connection(hostname) //init connection
+//            conn.connect() //start connection to the hostname
+//            val isAuthenticated: Boolean = conn.authenticateWithPassword(
+//                username,
+//                password
+//            )
+//            if (isAuthenticated == false) throw IOException("Authentication failed.")
+//            val sess: Session = conn.openSession()
+//            sess.execCommand(command)
+//            val stdout: InputStream = StreamGobbler(sess.getStdout())
+//            val br = BufferedReader(InputStreamReader(stdout))
+//            val stringBuilder = StringBuilder()
+//            //reads text
+//            while (true) {
+//                val line = br.readLine() ?: break // read line
+//                println(line)
+//                stringBuilder.append(line.split("\n".toRegex()).dropLastWhile { it.isEmpty() }
+//                    .toTypedArray())
+//            }
+//            responseData = stringBuilder.toString()
+//            /* Show exit status, if available (otherwise "null") */System.out.println("ExitCode: " + sess.getExitStatus())
+//            sess.close() // Close this session
+//            conn.close()
+//        } catch (e: IOException) {
+//            e.printStackTrace(System.err)
+//            //            System.exit(2);
+//        }
+//        return responseData
+//    }
 
 
 
