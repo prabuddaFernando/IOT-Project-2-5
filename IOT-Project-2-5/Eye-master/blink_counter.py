@@ -1,9 +1,12 @@
+import time
+
 import cv2
 from cvzone.FaceMeshModule import FaceMeshDetector
 
 
 class BlinkCounter:
     blinkCounter = 0
+    blinkRate = 0
 
     @staticmethod
     def thread_2():
@@ -14,6 +17,8 @@ class BlinkCounter:
         ratioList = []
         counter = 0
         color = (255, 0, 255)
+        startTime = time.time()
+        timeDuration = 60.0
         while True:
             if cap.get(cv2.CAP_PROP_POS_FRAMES) == cap.get(cv2.CAP_PROP_FRAME_COUNT):
                 cap.set(cv2.CAP_PROP_POS_FRAMES, 0)
@@ -53,5 +58,10 @@ class BlinkCounter:
                         # color = (255,0, 255)
 
                 print("blink counter", BlinkCounter.blinkCounter)
+                if ((time.time() - startTime) >= timeDuration):
+                    BlinkCounter.blinkRate = BlinkCounter.blinkCounter
+                    BlinkCounter.blinkCounter = 0
+                    startTime = time.time()
+                    print("blink rate", BlinkCounter.blinkRate)
 
             cv2.waitKey(25)
