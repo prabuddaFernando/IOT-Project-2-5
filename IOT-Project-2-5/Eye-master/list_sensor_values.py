@@ -15,9 +15,9 @@ oauthSignature = (privkey + "%26" + secret)
  
 # GET-request
 response = requests.get(
-	url="https://pa-api.telldus.com/json/sensor/info",
+	url="https://pa-api.telldus.com/json/sensors/list",
 	params={
-		"id":"1529876947",
+		"includeValues": "1",
 	},
 	headers={
 		"Authorization": 'OAuth oauth_consumer_key="{pubkey}", oauth_nonce="{nonce}", oauth_signature="{oauthSignature}", oauth_signature_method="PLAINTEXT", oauth_timestamp="{timestamp}", oauth_token="{token}", oauth_version="1.0"'.format(pubkey=pubkey, nonce=nonce, oauthSignature=oauthSignature, timestamp=timestamp, token=token),
@@ -26,6 +26,6 @@ response = requests.get(
 # Output/response from GET-request	
 responseData = response.json()
 print(json.dumps(responseData, indent=4, sort_keys=True))
-# responseData['data'][0]['value']
+responseData['sensor'][1]['temp']
 # print(responseData['sensor'][1]['temp'])
-print(responseData['sensor'][1]['humidity'])
+# print(responseData['sensor'][1]['humidity'])

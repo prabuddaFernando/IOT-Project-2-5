@@ -14,7 +14,8 @@ sensors = core.sensors()
 # Set MQTT broker and topic
 broker = "test.mosquitto.org."  # Broker
 
-pub_topic = "group/sensors/humidity"
+pub_topic_humidity = "group/sensors/humidity"
+pub_topic_temerature = "group/sensors/temperature"
 
 ############### MQTT section ##################
 
@@ -50,6 +51,13 @@ def get_humidity():
     #print(humidity)
     return humidity
 
+# def get_temerature():
+#     global temperature
+#     for sensor in sensors:
+#         if sensor.id == 135:
+#             temperature = int(sensor.value(TELLSTICK_TEMPERATURE).value)
+#     return temperature
+
 
 # Connect functions for MQTT
 client = mqtt.Client()
@@ -65,6 +73,8 @@ client.loop_start()
 
 # Loop that publishes message
 while True:
-    data_to_send = get_humidity()
-    client.publish(pub_topic, str(data_to_send))
+    hud = get_humidity()
+    client.publish(pub_topic_humidity, str(hud))
+    # temp = get_temerature()
+    # client.publish(pub_topic_temerature, str(temp))
     time.sleep(2.0)
