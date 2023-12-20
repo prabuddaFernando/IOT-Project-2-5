@@ -2,17 +2,20 @@ import cv2
 import cvzone
 from cvzone.FaceMeshModule import FaceMeshDetector
 from cvzone.PlotModule import LivePlot
+import time
 
 cap = cv2.VideoCapture(index=0)
 # cap = cv2.VideoCapture("data/video.mp4")
 detector = FaceMeshDetector(maxFaces=1)
 plotY = LivePlot(640, 360, [20, 50], invert=True)
-
 idList = [22, 23, 24, 26, 110, 157, 158, 159, 160, 161, 130, 243]
 ratioList = []
 blinkCounter = 0
 counter = 0
 color = (255, 0, 255)
+startTime = time.time()
+timeDuration = 60.0
+blinkRate = 0
 
 while True:
     if cap.get(cv2.CAP_PROP_POS_FRAMES) == cap.get(cv2.CAP_PROP_FRAME_COUNT):
@@ -54,6 +57,11 @@ while True:
 
         cvzone.putTextRect(img, f'Blink Count: {blinkCounter}', (50, 100),
                            colorR=color)
+        if((time.time() - startTime) >= timeDuration):
+            blinkRate = blinkCounter
+            blinkCounter = 0
+            startTime = time.time()
+            print("blinkRate", blinkRate)
 
         imgPlot = plotY.update(ratioAvg, color)
         img = cv2.resize(img, (640, 360))
