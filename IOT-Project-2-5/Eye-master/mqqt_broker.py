@@ -71,7 +71,7 @@ def get_temperature():
 #     return temperature
 
 def get_blink_rate():
-    return blink_counter.BlinkCounter.blinkCounter
+    return blink_counter.BlinkCounter.blinkRate
 
 
 # Connect functions for MQTT
@@ -90,10 +90,10 @@ client.loop_start()
 # Loop that publishes message
 def thread_1():
     while True:
-        hud = get_humidity()
-        client.publish(pub_topic_humidity, str(hud))
-        temp = get_temperature()
-        client.publish(pub_topic_temerature, str(temp))
+        # hud = get_humidity()
+        # client.publish(pub_topic_humidity, str(hud))
+        # temp = get_temperature()
+        # client.publish(pub_topic_temerature, str(temp))
         blink_rate = get_blink_rate()
         print("Blink rate: ====> " + str(blink_rate))
         client.publish(pub_topic_eye_blink_rate, blink_rate)

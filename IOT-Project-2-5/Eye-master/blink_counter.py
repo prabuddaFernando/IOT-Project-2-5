@@ -10,7 +10,7 @@ class BlinkCounter:
 
     @staticmethod
     def thread_2():
-        cap = cv2.VideoCapture(index=1)
+        cap = cv2.VideoCapture(index=0)
         detector = FaceMeshDetector(maxFaces=1)
 
         idList = [22, 23, 24, 26, 110, 157, 158, 159, 160, 161, 130, 243]
@@ -62,6 +62,6 @@ class BlinkCounter:
                     BlinkCounter.blinkRate = BlinkCounter.blinkCounter
                     BlinkCounter.blinkCounter = 0
                     startTime = time.time()
-                    print("blink rate", BlinkCounter.blinkRate)
+                    # print("blink rate :::::: > ", BlinkCounter.blinkRate)
 
             cv2.waitKey(25)

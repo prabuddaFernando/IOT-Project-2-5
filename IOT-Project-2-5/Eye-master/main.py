@@ -4,7 +4,7 @@ from cvzone.FaceMeshModule import FaceMeshDetector
 from cvzone.PlotModule import LivePlot
 import time
 
-cap = cv2.VideoCapture(index=0)
+cap = cv2.VideoCapture(index=1)
 # cap = cv2.VideoCapture("data/video.mp4")
 detector = FaceMeshDetector(maxFaces=1)
 plotY = LivePlot(640, 360, [20, 50], invert=True)
