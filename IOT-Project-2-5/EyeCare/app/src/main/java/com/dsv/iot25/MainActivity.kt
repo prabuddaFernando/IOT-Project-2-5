@@ -56,6 +56,7 @@ class MainActivity : AppCompatActivity() {
 
     //    val pub_topic_temerature = "group/sensors/temperature"
     val pub_topic_eye_blink_rate = "group/eye_blink/counter"
+    val pub_topic_humiditifyer_state = "group/humiditifyer/state"
 
     private val pub_topics = arrayOf(pub_topic_humidity, pub_topic_eye_blink_rate)
 
@@ -223,6 +224,18 @@ class MainActivity : AppCompatActivity() {
                                         setBlinkRateValue(messageString.toDouble())
                                     }
 
+                                    pub_topic_humiditifyer_state -> {
+                                        val messageString: String = message.toString()
+                                        var isActuatorTurnOn = messageString.toInt()
+                                        if ( isActuatorTurnOn == 1 ){
+                                            humStatusChip?.setBackgroundColor(Color.GREEN)
+                                            humStatusChip?.text = "Active"
+                                        }else{
+                                            humStatusChip?.setBackgroundColor(Color.GRAY)
+                                            humStatusChip?.text = "Deactivated"
+                                        }
+                                    }
+
                                 }
 
 
@@ -255,21 +268,14 @@ class MainActivity : AppCompatActivity() {
     private fun setHumidityValues(humidity: Double) {
         humidityValue = humidity
         circularProgress?.setProgress(humidity, 100.0)
-        if ( humidityValue > room_humidity_threshold_low && humidityValue < room_humidity_threshold_high ){
-            humStatusChip?.setBackgroundColor(Color.GREEN)
-            humStatusChip?.text = "Active"
-        }else{
-            humStatusChip?.setBackgroundColor(Color.GRAY)
-            humStatusChip?.text = "Deactivated"
-        }
     }
 
-    fun runProcessToRaspberry(command: String?): String? {
+    private fun runProcessToRaspberry(command: String?): String? {
         updateThreadPolicy()
         var responseData: String? = null
         val hostname = "192.168.0.116"
-        val username = "pi"
-        val password = "IoT@2021"
+        val username = "user"
+        val password = "Test@1234"
         try {
             val conn = Connection(hostname) //init connection
             conn.connect() //start connection to the hostname

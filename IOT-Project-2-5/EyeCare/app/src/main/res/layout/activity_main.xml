@@ -134,7 +134,7 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
-        android:text="Humiditifyer Automate"
+        android:text="Humiditifyer (On/Off)"
         android:textSize="16sp"
         app:layout_constraintEnd_toEndOf="@+id/textViewBlinkRate"
         app:layout_constraintStart_toStartOf="@+id/textView2"
