@@ -14,7 +14,7 @@ class MYApplication : Application() {
             var channel = NotificationChannel(
                 "notification_running_channel",
                 "Running Notification",
-                NotificationManager.IMPORTANCE_LOW
+                NotificationManager.IMPORTANCE_HIGH
             )
             val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
             notificationManager.createNotificationChannel(channel)

@@ -314,18 +314,47 @@ class MainActivity : AppCompatActivity() {
     private fun setBlinkRateValue(rate: Double) {
         blinkingRate = rate
         blinkRate?.text = "$rate Per Min"
-        val notificationManager =
-            getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        if(blinkingRate != 0.0 && blinkingRate < eye_blinking_rate_threshold_low){
+            // remind user to blink
 
-        val notification =
-            NotificationCompat.Builder(this, "notification_running_channel")
-                .setSmallIcon(R.drawable.ic_eye_notification)
-                .setContentText("Eye Blinking Rate")
-                .setPriority(NotificationCompat.PRIORITY_LOW)
-                .setContentText("Eye Blinking Rate Per min : $rate")
-                .build()
 
-        notificationManager?.notify(1, notification)
+            val notificationManager =
+                getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+
+            val notification =
+                NotificationCompat.Builder(this, "notification_running_channel")
+                    .setSmallIcon(R.drawable.ic_eye_notification)
+                    .setPriority(NotificationCompat.PRIORITY_HIGH)
+                    .setContentText("Please blink more often! You may be experiencing dehydration.\n" +
+                            " $rate Per Min")
+                    .build()
+
+            notificationManager?.notify(1, notification)
+        }else if(blinkingRate != 0.0 && blinkingRate > eye_blinking_rate_threshold_high){
+            val notificationManager =
+                getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+
+            val notification =
+                NotificationCompat.Builder(this, "notification_running_channel")
+                    .setSmallIcon(R.drawable.ic_eye_notification)
+                    .setPriority(NotificationCompat.PRIORITY_HIGH)
+                    .setContentText("You seem to be fed up. Take a break and get some rest!")
+                    .build()
+
+            notificationManager?.notify(1, notification)
+        }else {
+            val notificationManager =
+                getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+
+            val notification =
+                NotificationCompat.Builder(this, "notification_running_channel")
+                    .setSmallIcon(R.drawable.ic_eye_notification)
+                    .setPriority(NotificationCompat.PRIORITY_LOW)
+                    .setContentText("Eye Blinking Rate Per min : $rate")
+                    .build()
+
+            notificationManager?.notify(1, notification)
+        }
     }
 
     private fun subscribe(topicToSubscribe: Array<String>) {
