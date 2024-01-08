@@ -9,23 +9,35 @@ import blink_counter
 import paho.mqtt.client as mqtt
 import paho.mqtt.publish as publish
 
-# from tellcore.constants import TELLSTICK_HUMIDITY, TELLSTICK_TEMPERATURE
-# from tellcore.telldus import TelldusCore
+from tellcore.constants import TELLSTICK_HUMIDITY, TELLSTICK_TEMPERATURE
+from tellcore.telldus import TelldusCore
+
 #
-# core = TelldusCore()
+core = TelldusCore()
 #
-# sensors = core.sensors()
+sensors = core.sensors()
+devices = core.devices()
+
+room_humidity_threshold_low = 30
+room_humidity_threshold_high = 50
+eye_blinking_rate_threshold_low = 15
+eye_blinking_rate_threshold_high = 20
+
+for device in devices:
+    if device.id == 1:
+        actuator = device
 
 # Set MQTT broker and topic
 broker = "test.mosquitto.org."  # Broker
 
 pub_topic_humidity = "group/sensors/humidity"
-pub_topic_temerature = "group/sensors/temperature"
 pub_topic_eye_blink_rate = "group/eye_blink/counter"
+pub_topic_humiditifyer_state = "group/humiditifyer/state"
 
 
 ############### MQTT section ##################
 
+isActuatorTurnOn = 0
 # when connecting to mqtt do this;
 def on_connect(client, userdata, flags, rc):
     if rc == 0:
@@ -51,28 +63,27 @@ def on_log(client, userdata, level, buf):  # Message is in buf
 
 ############### Sensor section ##################
 def get_humidity():
-    return 33
-    # global humidity
-    # for sensor in sensors:
-    #     if sensor.id == 135:
-    #         humidity = int(sensor.value(TELLSTICK_HUMIDITY).value)
-    # #print(humidity)
-    # return humidity
+    global humidity
+    for sensor in sensors:
+        if sensor.id == 135:
+            humidity = int(sensor.value(TELLSTICK_HUMIDITY).value)
+    return humidity
 
-
-def get_temperature():
-    return 34
-
-
-#     global temperature
-#     for sensor in sensors:
-#         if sensor.id == 135:
-#             temperature = int(sensor.value(TELLSTICK_TEMPERATURE).value)
-#     return temperature
 
 def get_blink_rate():
     return blink_counter.BlinkCounter.blinkRate
 
+
+def controlHumiditifier(humidity):
+    if (humidity < room_humidity_threshold_low) or (humidity > room_humidity_threshold_high):
+        actuator.turn_on()
+        isActuatorTurnOn = 1
+    else:
+        actuator.turn_off()
+        isActuatorTurnOn = 0
+
+def getHumiditifierState():
+    return isActuatorTurnOn
 
 # Connect functions for MQTT
 client = mqtt.Client()
@@ -90,13 +101,13 @@ client.loop_start()
 # Loop that publishes message
 def thread_1():
     while True:
-        # hud = get_humidity()
-        # client.publish(pub_topic_humidity, str(hud))
-        # temp = get_temperature()
-        # client.publish(pub_topic_temerature, str(temp))
+        hud = get_humidity()
+        client.publish(pub_topic_humidity, str(hud))
+        controlHumiditifier(hud)
         blink_rate = get_blink_rate()
         print("Blink rate: ====> " + str(blink_rate))
         client.publish(pub_topic_eye_blink_rate, blink_rate)
+        client.publish(pub_topic_humiditifyer_state, getHumiditifierState())
         time.sleep(2.0)
 
 
