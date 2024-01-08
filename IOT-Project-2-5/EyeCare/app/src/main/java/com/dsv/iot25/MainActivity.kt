@@ -11,7 +11,6 @@ import android.os.StrictMode
 import android.os.StrictMode.ThreadPolicy
 import android.util.Log
 import android.widget.Button
-import android.widget.Switch
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.SwitchCompat
@@ -19,10 +18,11 @@ import androidx.core.app.ActivityCompat
 import androidx.core.app.NotificationCompat
 import antonkozyriatskyi.circularprogressindicator.CircularProgressIndicator
 import antonkozyriatskyi.circularprogressindicator.CircularProgressIndicator.ProgressTextAdapter
+import ch.ethz.ssh2.Connection
+import ch.ethz.ssh2.Session
+import ch.ethz.ssh2.StreamGobbler
 import com.github.mikephil.charting.charts.LineChart
-import com.github.mikephil.charting.data.Entry
-import com.github.mikephil.charting.data.LineData
-import com.github.mikephil.charting.data.LineDataSet
+import com.google.android.material.chip.Chip
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers.IO
 import kotlinx.coroutines.launch
@@ -34,10 +34,19 @@ import org.eclipse.paho.client.mqttv3.MqttCallbackExtended
 import org.eclipse.paho.client.mqttv3.MqttClient
 import org.eclipse.paho.client.mqttv3.MqttException
 import org.eclipse.paho.client.mqttv3.MqttMessage
+import java.io.BufferedReader
+import java.io.IOException
+import java.io.InputStream
+import java.io.InputStreamReader
 
 
 class MainActivity : AppCompatActivity() {
 
+
+    val room_humidity_threshold_low = 30
+    val room_humidity_threshold_high = 50
+    val eye_blinking_rate_threshold_low = 15
+    val eye_blinking_rate_threshold_high = 20
 
     private val SERVER_URI = "tcp://test.mosquitto.org:1883"
     private val TAG = "MainActivity"
@@ -58,6 +67,7 @@ class MainActivity : AppCompatActivity() {
     private var stopServiceBtn: Button? = null
     private var humiditifier: SwitchCompat? = null
     private var chart: LineChart? = null
+    private var humStatusChip : Chip? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -77,7 +87,23 @@ class MainActivity : AppCompatActivity() {
         blinkRate = findViewById(R.id.textViewBlinkRate)
         startServiceBtn = findViewById(R.id.startServiceButton)
         stopServiceBtn = findViewById(R.id.stopServiceButton)
-        humiditifier = findViewById(R.id.switch1)
+        humiditifier = findViewById(R.id.automate_humiditifier_switch)
+        humStatusChip = findViewById(R.id.chip_status_active)
+
+
+        humiditifier?.setOnCheckedChangeListener { buttonView, isChecked ->
+            if (isChecked) {
+                // Switch is ON
+                CoroutineScope(IO).launch {
+                    runProcessToRaspberry("python3 eyecare/humiditifier-on.py")
+                }
+            } else {
+                // Switch is OFF
+                CoroutineScope(IO).launch {
+                    runProcessToRaspberry("python3 eyecare/humiditifier-off.py")
+                }
+            }
+        }
 
         var textAdapter =
             ProgressTextAdapter { time ->
@@ -229,14 +255,51 @@ class MainActivity : AppCompatActivity() {
     private fun setHumidityValues(humidity: Double) {
         humidityValue = humidity
         circularProgress?.setProgress(humidity, 100.0)
-        humiditifier?.isChecked = humidity < 35
-        if(humidity != 0.0 && humidity != 0.0) {
-            
+        if ( humidityValue > room_humidity_threshold_low && humidityValue < room_humidity_threshold_high ){
+            humStatusChip?.setBackgroundColor(Color.GREEN)
+            humStatusChip?.text = "Active"
+        }else{
+            humStatusChip?.setBackgroundColor(Color.GRAY)
+            humStatusChip?.text = "Deactivated"
         }
     }
 
-    private fun setTemperatureValues(humidity: Double) {
-        // TODO
+    fun runProcessToRaspberry(command: String?): String? {
+        updateThreadPolicy()
+        var responseData: String? = null
+        val hostname = "192.168.0.116"
+        val username = "pi"
+        val password = "IoT@2021"
+        try {
+            val conn = Connection(hostname) //init connection
+            conn.connect() //start connection to the hostname
+            val isAuthenticated: Boolean = conn.authenticateWithPassword(
+                username,
+                password
+            )
+            if (isAuthenticated == false) throw IOException("Authentication failed.")
+            val sess: Session = conn.openSession()
+            sess.execCommand(command)
+            val stdout: InputStream = StreamGobbler(sess.getStdout())
+            val br = BufferedReader(InputStreamReader(stdout))
+            val stringBuilder = StringBuilder()
+            //reads text
+            while (true) {
+                val line = br.readLine() ?: break // read line
+                println(line)
+                stringBuilder.append(line.split("\n".toRegex()).dropLastWhile { it.isEmpty() }
+                    .toTypedArray())
+            }
+            responseData = stringBuilder.toString()
+            /* Show exit status, if available (otherwise "null") */System.out.println("ExitCode: " + sess.getExitStatus())
+            sess.close() // Close this session
+            conn.close()
+        } catch (e: IOException) {
+            e.printStackTrace(System.err)
+        } catch (e: Exception){
+            e.printStackTrace(System.err)
+        }
+        return responseData
     }
 
     var blinkingRate = 0.0
