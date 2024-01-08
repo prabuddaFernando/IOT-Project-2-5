@@ -7,6 +7,20 @@
     android:background="@color/white"
     tools:context=".MainActivity">
 
+    <androidx.appcompat.widget.Toolbar
+        android:id="@+id/my_toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="?attr/actionBarSize"
+        android:background="?attr/colorAccent"
+        android:elevation="4dp"
+        app:title="Dashboard"
+        android:textAlignment="center"
+        app:titleTextColor="@color/white"
+        android:theme="@style/ThemeOverlay.AppCompat.ActionBar"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:popupTheme="@style/ThemeOverlay.AppCompat.Light" />
 
     <antonkozyriatskyi.circularprogressindicator.CircularProgressIndicator
         android:id="@+id/circular_progress"
@@ -14,7 +28,7 @@
         android:layout_height="200dp"
         android:layout_gravity="center"
         android:layout_marginStart="32dp"
-        android:layout_marginTop="32dp"
+        android:layout_marginTop="24dp"
         android:layout_marginEnd="32dp"
         app:direction="clockwise"
         app:dotWidth="16dp"
@@ -26,7 +40,7 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/my_toolbar"
         app:layout_constraintVertical_bias="0.0"
         app:progressBackgroundColor="@color/grey_12"
         app:progressBackgroundStrokeWidth="8dp"
@@ -56,6 +70,7 @@
         android:layout_marginStart="32dp"
         android:layout_marginEnd="32dp"
         android:text="Eye Blinking Rate"
+        android:textSize="18sp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.0"
@@ -69,6 +84,7 @@
         android:layout_height="wrap_content"
         android:layout_marginEnd="32dp"
         android:text="0"
+        android:textSize="18sp"
         app:layout_constraintBottom_toBottomOf="@+id/textView2"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="1.0"
