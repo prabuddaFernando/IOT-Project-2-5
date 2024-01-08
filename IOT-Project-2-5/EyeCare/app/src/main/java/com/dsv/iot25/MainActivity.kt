@@ -2,23 +2,27 @@ package com.dsv.iot25
 
 import android.Manifest
 import android.app.NotificationManager
-import android.app.PendingIntent
-import android.app.PendingIntent.FLAG_IMMUTABLE
 import android.content.Context
 import android.content.Intent
+import android.graphics.Color
 import android.os.Build
 import android.os.Bundle
 import android.os.StrictMode
 import android.os.StrictMode.ThreadPolicy
 import android.util.Log
 import android.widget.Button
-import android.widget.SeekBar
+import android.widget.Switch
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.widget.SwitchCompat
 import androidx.core.app.ActivityCompat
 import androidx.core.app.NotificationCompat
 import antonkozyriatskyi.circularprogressindicator.CircularProgressIndicator
 import antonkozyriatskyi.circularprogressindicator.CircularProgressIndicator.ProgressTextAdapter
+import com.github.mikephil.charting.charts.LineChart
+import com.github.mikephil.charting.data.Entry
+import com.github.mikephil.charting.data.LineData
+import com.github.mikephil.charting.data.LineDataSet
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers.IO
 import kotlinx.coroutines.launch
@@ -30,6 +34,7 @@ import org.eclipse.paho.client.mqttv3.MqttCallbackExtended
 import org.eclipse.paho.client.mqttv3.MqttClient
 import org.eclipse.paho.client.mqttv3.MqttException
 import org.eclipse.paho.client.mqttv3.MqttMessage
+
 
 class MainActivity : AppCompatActivity() {
 
@@ -51,6 +56,8 @@ class MainActivity : AppCompatActivity() {
     private var blinkRate: TextView? = null
     private var startServiceBtn: Button? = null
     private var stopServiceBtn: Button? = null
+    private var humiditifier: SwitchCompat? = null
+    private var chart: LineChart? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -70,6 +77,7 @@ class MainActivity : AppCompatActivity() {
         blinkRate = findViewById(R.id.textViewBlinkRate)
         startServiceBtn = findViewById(R.id.startServiceButton)
         stopServiceBtn = findViewById(R.id.stopServiceButton)
+        humiditifier = findViewById(R.id.switch1)
 
         var textAdapter =
             ProgressTextAdapter { time ->
@@ -85,6 +93,35 @@ class MainActivity : AppCompatActivity() {
         stopServiceBtn?.setOnClickListener {
             stopService()
         }
+
+//        chart = findViewById<LineChart>(R.id.chart)
+//
+//        val entries: ArrayList<Entry> = ArrayList()
+//
+//        var list = listOf<Pair<Float, Float>>(
+//            Pair(0.5f, 0.5f),
+//            Pair(1.5f, 0.8f),
+//            Pair(2.5f, 1.5f),
+//            Pair(3.5f, 2.9f),
+//            Pair(4.5f, 2.5f),
+//            Pair(5.5f, 3.5f),
+//        )
+//        for (data in list) {
+//            entries.add(Entry(data.first, data.second))
+//        }
+//
+//        var  dataSet =  LineDataSet(entries, "Blinking Rate Vs Humidity") // add entries to dataset
+//        dataSet.color = Color.GREEN
+//        dataSet.valueTextColor = Color.BLUE
+//
+//
+//        val lineData = LineData(dataSet)
+//        lineData.dataSets.first().label = "Humidity"
+//        lineData.dataSets.last().label = "Blinking Rate"
+//        chart?.background = getDrawable(R.color.white)
+//        chart?.data = lineData
+//        chart?.invalidate()
+
     }
 
     private fun startService() {
@@ -190,22 +227,29 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun setHumidityValues(humidity: Double) {
+        humidityValue = humidity
         circularProgress?.setProgress(humidity, 100.0)
+        humiditifier?.isChecked = humidity < 35
+        if(humidity != 0.0 && humidity != 0.0) {
+            
+        }
     }
 
     private fun setTemperatureValues(humidity: Double) {
         // TODO
     }
 
-
+    var blinkingRate = 0.0
+    var humidityValue = 0.0
 
     private fun setBlinkRateValue(rate: Double) {
+        blinkingRate = rate
         blinkRate?.text = "$rate Per Min"
         val notificationManager =
             getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
 
         val notification =
-            NotificationCompat.Builder(this,"notification_running_channel")
+            NotificationCompat.Builder(this, "notification_running_channel")
                 .setSmallIcon(R.drawable.ic_eye_notification)
                 .setContentText("Eye Blinking Rate")
                 .setPriority(NotificationCompat.PRIORITY_LOW)

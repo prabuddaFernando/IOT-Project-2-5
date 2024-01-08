@@ -50,5 +50,8 @@ dependencies {
 
     implementation 'androidx.legacy:legacy-support-v4:1.0.0'
 
+    // chart library
+    implementation 'com.github.PhilJay:MPAndroidChart:v3.1.0'
+
 
 }
