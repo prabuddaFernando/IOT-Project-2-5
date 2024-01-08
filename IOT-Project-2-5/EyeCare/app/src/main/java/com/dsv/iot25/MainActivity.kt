@@ -325,8 +325,12 @@ class MainActivity : AppCompatActivity() {
                 NotificationCompat.Builder(this, "notification_running_channel")
                     .setSmallIcon(R.drawable.ic_eye_notification)
                     .setPriority(NotificationCompat.PRIORITY_HIGH)
-                    .setContentText("Please blink more often! You may be experiencing dehydration.\n" +
-                            " $rate Per Min")
+                    .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
+                    .setContentText("Hydrated?")
+                    .setStyle(NotificationCompat.BigTextStyle()
+                        .bigText("Please blink more often! You may be experiencing dehydration.\n" +
+                                " $rate Per Min")
+                    )
                     .build()
 
             notificationManager?.notify(1, notification)
@@ -338,7 +342,11 @@ class MainActivity : AppCompatActivity() {
                 NotificationCompat.Builder(this, "notification_running_channel")
                     .setSmallIcon(R.drawable.ic_eye_notification)
                     .setPriority(NotificationCompat.PRIORITY_HIGH)
-                    .setContentText("You seem to be fed up. Take a break and get some rest!")
+                    .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
+                    .setContentText("Feel tired?")
+                    .setStyle(NotificationCompat.BigTextStyle()
+                        .bigText("You seem to be fed up. Take a break and get some rest!")
+                    )
                     .build()
 
             notificationManager?.notify(1, notification)
@@ -350,6 +358,7 @@ class MainActivity : AppCompatActivity() {
                 NotificationCompat.Builder(this, "notification_running_channel")
                     .setSmallIcon(R.drawable.ic_eye_notification)
                     .setPriority(NotificationCompat.PRIORITY_LOW)
+                    .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
                     .setContentText("Eye Blinking Rate Per min : $rate")
                     .build()
 
