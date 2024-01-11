@@ -2,9 +2,9 @@ package com.dsv.iot25
 
 import android.Manifest
 import android.app.NotificationManager
+import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
-import android.graphics.Color
 import android.os.Build
 import android.os.Bundle
 import android.os.StrictMode
@@ -46,7 +46,7 @@ class MainActivity : AppCompatActivity() {
     val room_humidity_threshold_low = 30
     val room_humidity_threshold_high = 50
     val eye_blinking_rate_threshold_low = 15
-    val eye_blinking_rate_threshold_high = 20
+    val eye_blinking_rate_threshold_high = 50
 
     private val SERVER_URI = "tcp://test.mosquitto.org:1883"
     private val TAG = "MainActivity"
@@ -58,7 +58,7 @@ class MainActivity : AppCompatActivity() {
     val pub_topic_eye_blink_rate = "group/eye_blink/counter"
     val pub_topic_humiditifyer_state = "group/humiditifyer/state"
 
-    private val pub_topics = arrayOf(pub_topic_humidity, pub_topic_eye_blink_rate)
+    private val pub_topics = arrayOf(pub_topic_humidity, pub_topic_eye_blink_rate,pub_topic_humiditifyer_state)
 
     private var client: MqttAndroidClient? = null
 
@@ -209,7 +209,7 @@ class MainActivity : AppCompatActivity() {
                                 when (topic) {
                                     pub_topic_humidity -> {
                                         val messageString: String = message.toString()
-                                        println("###### Incoming message: $messageString")
+                                        println("###### Incoming message: $messageString $topic")
                                         setHumidityValues(messageString.toDouble())
                                     }
 //                                    pub_topic_temerature-> {
@@ -220,25 +220,23 @@ class MainActivity : AppCompatActivity() {
 
                                     pub_topic_eye_blink_rate -> {
                                         val messageString: String = message.toString()
-                                        println("###### Incoming message: $messageString")
+                                        println("###### Incoming message: $messageString $topic")
                                         setBlinkRateValue(messageString.toDouble())
                                     }
 
                                     pub_topic_humiditifyer_state -> {
                                         val messageString: String = message.toString()
+                                        println("###### Incoming message: $messageString $topic")
                                         var isActuatorTurnOn = messageString.toInt()
                                         if ( isActuatorTurnOn == 1 ){
-                                            humStatusChip?.setBackgroundColor(Color.GREEN)
+                                            humStatusChip?.setChipBackgroundColorResource(R.color.green)
                                             humStatusChip?.text = "Active"
                                         }else{
-                                            humStatusChip?.setBackgroundColor(Color.GRAY)
+                                            humStatusChip?.setChipBackgroundColorResource(R.color.grey_12)
                                             humStatusChip?.text = "Deactivated"
                                         }
                                     }
-
                                 }
-
-
                             }
                         }
 
@@ -311,46 +309,69 @@ class MainActivity : AppCompatActivity() {
     var blinkingRate = 0.0
     var humidityValue = 0.0
 
+    private fun getPendingIntent (): NotificationCompat.Action {
+        val okIntent = Intent(this, MainActivity::class.java)
+        okIntent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
+        okIntent.action = "OK_ACTION" // Add a unique action string
+        val okPendingIntent = PendingIntent.getActivity(
+            this, 0, okIntent, PendingIntent.FLAG_UPDATE_CURRENT
+        )
+        val okAction: NotificationCompat.Action = NotificationCompat.Action(
+            R.drawable.baseline_check_circle_24,
+            "OK",
+            okPendingIntent
+        )
+        return okAction
+    }
+
     private fun setBlinkRateValue(rate: Double) {
+        if(rate!= 0.0 && blinkingRate == rate){
+            return
+        }
+
         blinkingRate = rate
-        blinkRate?.text = "$rate Per Min"
-        if(blinkingRate != 0.0 && blinkingRate < eye_blinking_rate_threshold_low){
+        if(rate > 0){
+            blinkRate?.text = "$rate Per Min"
+        }
+        if(blinkingRate != 0.0 && blinkingRate < eye_blinking_rate_threshold_low) {
+
+            val okIntent = getPendingIntent()
             // remind user to blink
-
-
             val notificationManager =
                 getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
 
             val notification =
-                NotificationCompat.Builder(this, "notification_running_channel")
+                NotificationCompat.Builder(this, "notification_running_channel_alert")
                     .setSmallIcon(R.drawable.ic_eye_notification)
                     .setPriority(NotificationCompat.PRIORITY_HIGH)
                     .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
                     .setContentText("Hydrated?")
+                    .addAction(okIntent)
                     .setStyle(NotificationCompat.BigTextStyle()
-                        .bigText("Please blink more often! You may be experiencing dehydration.\n" +
-                                " $rate Per Min")
+                        .bigText("Please blink more often! You may be experiencing dehydration. Your eye blinking rate is " +
+                                " $rate Per Min. This is not healthy!")
                     )
                     .build()
 
-            notificationManager?.notify(1, notification)
+            notificationManager.notify(1, notification)
         }else if(blinkingRate != 0.0 && blinkingRate > eye_blinking_rate_threshold_high){
             val notificationManager =
                 getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-
+            val okIntent = getPendingIntent()
             val notification =
-                NotificationCompat.Builder(this, "notification_running_channel")
+                NotificationCompat.Builder(this, "notification_running_channel_alert")
                     .setSmallIcon(R.drawable.ic_eye_notification)
                     .setPriority(NotificationCompat.PRIORITY_HIGH)
                     .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
                     .setContentText("Feel tired?")
+                    .addAction(okIntent)
                     .setStyle(NotificationCompat.BigTextStyle()
                         .bigText("You seem to be fed up. Take a break and get some rest!")
                     )
                     .build()
 
-            notificationManager?.notify(1, notification)
-        }else {
+            notificationManager.notify(2, notification)
+        } else if(blinkingRate != 0.0) {
             val notificationManager =
                 getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
 
@@ -362,7 +383,7 @@ class MainActivity : AppCompatActivity() {
                     .setContentText("Eye Blinking Rate Per min : $rate")
                     .build()
 
-            notificationManager?.notify(1, notification)
+            notificationManager.notify(1, notification)
         }
     }
 
