@@ -75,11 +75,11 @@ def get_blink_rate():
 
 
 def controlHumiditifier(humidity):
+    global isActuatorTurnOn
     if (humidity < room_humidity_threshold_low) or (humidity > room_humidity_threshold_high):
         actuator.turn_on()
         isActuatorTurnOn = 1
     else:
-        actuator.turn_off()
         isActuatorTurnOn = 0
 
 def getHumiditifierState():
